@@ -1,0 +1,374 @@
+<!doctype html><html><head></head><body><!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Base64 Encoder & Decoder</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			margin: 0;
+			padding: 0;
+			background: linear-gradient(135deg, #4facfe, #00f2fe);
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.container {
+			background: #ffffffee;
+			width: 90%;
+			max-width: 750px;
+			padding: 35px;
+			border-radius: 18px;
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+			animation: fadeIn 0.7s ease-in-out;
+		}
+
+		h2 {
+			text-align: center;
+			color: #333;
+			font-size: 26px;
+			margin-bottom: 10px;
+		}
+
+		p.note {
+			text-align: center;
+			font-size: 15px;
+			margin-bottom: 25px;
+			color: #333;
+			background: #fff8d9;
+			padding: 12px;
+			border-left: 6px solid #ffc107;
+			border-radius: 10px;
+		}
+
+		.tabs {
+			display: flex;
+			justify-content: center;
+			margin-bottom: 25px;
+		}
+
+		.tab {
+			flex: 1;
+			padding: 14px;
+			cursor: pointer;
+			text-align: center;
+			background: #f1f1f1;
+			border-radius: 10px 10px 0 0;
+			transition: all 0.3s ease;
+			font-weight: 500;
+		}
+
+		.tab.active {
+			background: linear-gradient(135deg, #42a5f5, #1976d2);
+			color: #fff;
+			font-weight: bold;
+			box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.15) inset;
+		}
+
+		.tab:hover {
+			background: #bbdefb;
+		}
+
+		.section {
+			display: none;
+		}
+
+		.section.active {
+			display: block;
+			animation: fadeIn 0.5s ease-in-out;
+		}
+
+		select,
+		textarea,
+		input[type="file"],
+		input[type="text"] {
+			width: 100%;
+			margin: 14px 0;
+			padding: 12px;
+			font-size: 15px;
+			border-radius: 10px;
+			border: 1px solid #ccc;
+			transition: 0.3s;
+		}
+
+		textarea[readonly] {
+			background: #f9f9ff;
+			color: #222;
+			box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+		}
+
+		select {
+			appearance: none;
+			background: url('https://img.icons8.com/ios-filled/16/000000/expand-arrow.png') no-repeat right 12px center;
+			background-color: #fafafa;
+			padding-right: 30px;
+		}
+
+		select:hover,
+		textarea:hover,
+		input[type="file"]:hover,
+		input[type="text"]:hover {
+			border-color: #1976d2;
+			background: #f5faff;
+		}
+
+		button,
+		a {
+			display: inline-block;
+			padding: 12px 22px;
+			margin: 10px 6px;
+			font-size: 15px;
+			background: linear-gradient(135deg, #42a5f5, #1976d2);
+			color: white;
+			text-decoration: none;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+		}
+
+	  .msg {
+	    margin-top: 6px;
+	    font-size: 14px;
+	    font-weight: 500;
+	  }
+
+		button:hover,
+		a:hover {
+			background: linear-gradient(135deg, #1e88e5, #0d47a1);
+			transform: scale(1.05);
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(15px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h2>Base64 Encoder & Decoder</h2>
+		<p class="note">
+			<b>Base64 Encoder</b> (Text → Copy, File → Copy)<br>
+			<b>Base64 Decoder</b> (Text → Copy, File → Download)<br>
+			In Base64 decoding, the output defaults to a .txt file, you should be aware of the original extension.
+		</p>
+
+			<!-- Tabs -->
+			<div class="tabs">
+				<div class="tab active" onclick="switchTab('encode')">Encoder</div>
+				<div class="tab" onclick="switchTab('decode')">Decoder</div>
+			</div>
+
+			<!-- ENCODER -->
+			<div id="encode" class="section active">
+				<select id="encodeMode" onchange="toggleEncodeInput()">
+				<option value="text">Text</option>
+				<option value="file">File</option>
+			</select>
+
+				<div id="encodeTextInput">
+					<textarea id="encodeText" rows="4" placeholder="Enter text..."></textarea>
+					<button onclick="encodeTextFunc()">Encode Text</button>
+				</div>
+
+				<div id="encodeFileInput" style="display:none;">
+					<input type="file" id="encodeFile" />
+					<button onclick="encodeFileFunc()">Encode File</button>
+				</div>
+
+				<textarea id="encodeResult" style="display:none;" rows="6" readonly></textarea>
+				<button id="encodeCopyBtn" style="display:none;" onclick="copyResult('encodeResult','encodeMsg')">Copy</button>
+				<div id="encodeMsg" class="msg"></div>
+			</div>
+
+			<!-- DECODER -->
+			<div id="decode" class="section">
+				<select id="decodeMode" onchange="toggleDecodeInput()">
+				<option value="text">Text</option>
+				<option value="file">File</option>
+			</select>
+
+				<div id="decodeTextInput">
+					<textarea id="decodeText" rows="4" placeholder="Paste Base64 string..."></textarea>
+					<button onclick="decodeTextFunc()">Decode Text</button>
+				</div>
+
+				<!-- File Decode -->
+				<div id="decodeFileInput" style="display:none;">
+					<textarea id="decodeFileBase64" rows="4" placeholder="Paste Base64 string for file..."></textarea>
+					<button onclick="decodeFileFunc()">Decode File</button>
+					<div>Base64 Decoded File Download may take some time.</div>
+				</div>
+
+				<textarea id="decodeResult" style="display:none;" rows="6" readonly></textarea>
+				<button id="decodeCopyBtn" style="display:none;" onclick="copyResult('decodeResult','decodeMsg')">Copy</button>
+				<div id="decodeMsg" class="msg"></div>
+				<a id="downloadBtn" style="display:none;">Download File</a>
+			</div>
+	</div>
+
+	<script>
+
+	  function showMessage(id, text, type = "info") {
+	    const el = document.getElementById(id);
+	    if (!el) return;
+	
+	    el.textContent = text;
+	
+	    // Style based on type
+	    if (type === "error") {
+	      el.style.color = "red";
+	    } else if (type === "success") {
+	      el.style.color = "green";
+	    } else {
+	      el.style.color = "#333";
+	    }
+	
+	    // Optional auto-clear
+	    setTimeout(() => { el.textContent = ""; }, 4000);
+	  }
+
+		// Tab switcher
+		function switchTab(tab) {
+			document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+			document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+			document.getElementById(tab).classList.add('active');
+			document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+		}
+
+		// Toggle Encoder Input
+		function toggleEncodeInput() {
+			const mode = document.getElementById("encodeMode").value;
+			document.getElementById("encodeTextInput").style.display = mode === "text" ? "block" : "none";
+			document.getElementById("encodeFileInput").style.display = mode === "file" ? "block" : "none";
+			document.getElementById("encodeResult").style.display = "none";
+			document.getElementById("encodeCopyBtn").style.display = "none";
+		}
+
+		// Toggle Decoder Input
+		function toggleDecodeInput() {
+			const mode = document.getElementById("decodeMode").value;
+			document.getElementById("decodeTextInput").style.display = mode === "text" ? "block" : "none";
+			document.getElementById("decodeFileInput").style.display = mode === "file" ? "block" : "none";
+			document.getElementById("decodeResult").style.display = "none";
+			document.getElementById("decodeCopyBtn").style.display = "none";
+			document.getElementById("downloadBtn").style.display = "none";
+		}
+
+		// Encode Text
+		function encodeTextFunc() {
+			const text = document.getElementById("encodeText").value;
+			if (!text) return showMessage("encodeMsg", "⚠️ Please enter text.", "error");
+			const encoded = btoa(unescape(encodeURIComponent(text)));
+			document.getElementById("encodeResult").style.display = "block";
+			document.getElementById("encodeResult").value = encoded;
+			document.getElementById("encodeCopyBtn").style.display = "inline-block";
+	    showMessage("encodeMsg", "✅ Text encoded successfully!", "success");
+		}
+
+		// Encode File
+		function encodeFileFunc() {
+			const fileInput = document.getElementById("encodeFile").files[0];
+			if (!fileInput) return showMessage("encodeMsg", "⚠️ Please select a file.", "error");
+			if (fileInput.size > 10 * 1024 * 1024) return showMessage("encodeMsg", "⚠️ File too large (max 10MB).", "error");
+
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				const base64 = e.target.result.split(",")[1];
+				document.getElementById("encodeResult").style.display = "block";
+				document.getElementById("encodeResult").value = base64;
+				document.getElementById("encodeCopyBtn").style.display = "inline-block";
+		    showMessage("encodeMsg", "✅ File encoded successfully!", "success");
+			};
+			reader.readAsDataURL(fileInput);
+		}
+
+		// Decode Text
+		function decodeTextFunc() {
+			const base64 = document.getElementById("decodeText").value.trim();
+			if (!base64) return showMessage("decodeMsg", "⚠️ Please paste a Base64 string.", "error");
+			try {
+				const decoded = decodeURIComponent(escape(atob(base64)));
+				document.getElementById("decodeResult").style.display = "block";
+				document.getElementById("decodeResult").value = decoded;
+				document.getElementById("decodeCopyBtn").style.display = "inline-block";
+		    showMessage("decodeMsg", "✅ Text decoded successfully!", "success");
+			
+      } catch {
+				showMessage("decodeMsg", "⚠️ Invalid Base64 string!", "error");
+			}
+		}
+
+		// Decode File
+		function decodeFileFunc() {
+		  const base64 = document.getElementById("decodeFileBase64").value.trim();
+			if (!base64) return showMessage("decodeMsg", "⚠️ Please paste a Base64 string.", "error");
+			try {
+				let pureBase64 = base64;
+				if (base64.includes(",")) {
+					pureBase64 = base64.split(",")[1];
+				}
+				const byteCharacters = atob(pureBase64);
+				const byteNumbers = new Array(byteCharacters.length);
+				for (let i = 0; i < byteCharacters.length; i++) {
+					byteNumbers[i] = byteCharacters.charCodeAt(i);
+				}
+				const byteArray = new Uint8Array(byteNumbers);
+				const blob = new Blob([byteArray], { type: "text/plain" });
+
+				const url = URL.createObjectURL(blob);
+				const downloadBtn = document.getElementById("downloadBtn");
+				downloadBtn.href = url;
+				downloadBtn.download = "file.txt";
+				downloadBtn.style.display = "inline-block";
+				downloadBtn.innerText = "Download file.txt";
+        showMessage("decodeMsg", "✅ File decoded successfully!", "success");
+			} catch {
+				showMessage("decodeMsg", "⚠️ Invalid Base64 string!", "error");
+			}
+		}
+
+		// Copy Function
+		function copyResult(id, msgId) {
+      const el = document.getElementById(id);
+      const msgEl = document.getElementById(msgId);
+
+      if (!el || !msgEl) return;
+
+      el.select();
+      el.setSelectionRange(0, 99999999); // for mobile
+      const success = document.execCommand("copy");
+
+      if (success) {
+          msgEl.textContent = "✅ Copied!";
+          msgEl.style.color = "green";
+      } else {
+          msgEl.textContent = "⚠️ Copy failed!";
+          msgEl.style.color = "red";
+      }
+
+      // Optional: auto-clear after 3s
+      setTimeout(() => { msgEl.textContent = ""; }, 4000);
+    }
+
+
+	</script>
+</body>
+
+</html>
+
+</body><html>
